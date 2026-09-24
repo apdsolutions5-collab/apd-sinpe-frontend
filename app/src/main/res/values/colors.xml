@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <color name="fondo_oscuro">#121212</color>
+    <color name="tarjeta_oscura">#1E1E1E</color>
+    <color name="superficie_oscura">#252525</color>
+
+    <color name="azul_principal">#1E88E5</color>
+    <color name="azul_oscuro">#1565C0</color>
+    <color name="azul_acento">#64B5F6</color>
+
+    <color name="texto_principal">#FFFFFF</color>
+    <color name="texto_secundario">#B0BEC5</color>
+
+    <color name="estado_valido">#4CAF50</color>
+    <color name="estado_invalido">#E53935</color>
 </resources>
