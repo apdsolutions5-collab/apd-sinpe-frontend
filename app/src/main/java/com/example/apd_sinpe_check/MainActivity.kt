@@ -26,6 +26,9 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.util.Locale
 import java.util.regex.Pattern
@@ -261,7 +264,32 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // Preparación del cuerpo MultipartBody para Retrofit (KAN-44)
+        val multipartImagen = prepararImagenMultipart(uri)
+        if (multipartImagen != null) {
+            // La imagen ya está convertida y lista en formato MultipartBody.Part para peticiones de red
+        }
+
         procesarComprobanteRealConOCR(uri)
+    }
+
+    private fun prepararImagenMultipart(uri: Uri): MultipartBody.Part? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val bytes = inputStream.readBytes()
+            inputStream.close()
+
+            val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+            val requestFile = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+
+            Toast.makeText(this, "MultipartBody generado: ${bytes.size} bytes", Toast.LENGTH_SHORT).show()
+
+            MultipartBody.Part.createFormData("imagen", "comprobante.jpg", requestFile)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error al generar MultipartBody", Toast.LENGTH_SHORT).show()
+            null
+        }
     }
 
     private fun procesarComprobanteRealConOCR(uri: Uri) {
@@ -298,14 +326,15 @@ class MainActivity : AppCompatActivity() {
                     val claveDuplicado = datosExtraidos.referencia.ifBlank { rawText.hashCode().toString() }
                     val esDuplicado = referenciasValidadas.contains(claveDuplicado)
 
-                    // Verificación de monto
-                    val montoTexto = etMontoEsperado.text.toString().trim()
-                    val montoEsperado = montoTexto.toDoubleOrNull() ?: 0.0
+                    // Verificación de monto ingresado por el usuario
+                    val montoTextoRaw = etMontoEsperado.text.toString().trim()
+                    val montoEsperado = parsearStringAMonto(montoTextoRaw)
+
+                    // Se tolera una pequeña diferencia flotante (menor a 1 céntimo)
                     val esMontoIncorrecto = montoEsperado > 0 && datosExtraidos.monto > 0 && abs(datosExtraidos.monto - montoEsperado) >= 0.01
 
                     // Evaluación de alertas combinadas
                     if (esDuplicado && esMontoIncorrecto) {
-                        // CASO 1: DUPLICADO + MONTO INCORRECTO
                         val strMontoEsp = String.format(Locale.getDefault(), "%,.2f", montoEsperado)
                         mostrarEstadoAlerta(
                             "¡Alerta! Comprobante Inválido (Duplicado y Monto Erróneo)",
@@ -316,7 +345,6 @@ class MainActivity : AppCompatActivity() {
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_invalido))
 
                     } else if (esDuplicado) {
-                        // CASO 2: SOLO DUPLICADO
                         mostrarEstadoAlerta(
                             getString(R.string.estado_alerta_duplicado_titulo),
                             "Este comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Misma foto" }}) ya fue registrado y procesado previamente.",
@@ -326,7 +354,6 @@ class MainActivity : AppCompatActivity() {
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_invalido))
 
                     } else if (esMontoIncorrecto) {
-                        // CASO 3: SOLO MONTO INCORRECTO
                         referenciasValidadas.add(claveDuplicado)
                         val strMontoEsp = String.format(Locale.getDefault(), "%,.2f", montoEsperado)
                         mostrarEstadoAlerta(
@@ -338,7 +365,6 @@ class MainActivity : AppCompatActivity() {
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_valido))
 
                     } else {
-                        // CASO 4: ÉXITO
                         referenciasValidadas.add(claveDuplicado)
                         tvEsDuplicado.text = getString(R.string.duplicado_no)
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_valido))
@@ -374,6 +400,25 @@ class MainActivity : AppCompatActivity() {
                 mostrarDetalles = false
             )
         }
+    }
+
+    private fun parsearStringAMonto(rawVal: String): Double {
+        var valLimpio = rawVal.replace(" ", "")
+        if (valLimpio.contains(",") && valLimpio.contains(".")) {
+            if (valLimpio.lastIndexOf(',') > valLimpio.lastIndexOf('.')) {
+                valLimpio = valLimpio.replace(".", "").replace(",", ".")
+            } else {
+                valLimpio = valLimpio.replace(",", "")
+            }
+        } else if (valLimpio.contains(",")) {
+            val partes = valLimpio.split(",")
+            valLimpio = if (partes.last().length == 2) {
+                partes.dropLast(1).joinToString("") + "." + partes.last()
+            } else {
+                valLimpio.replace(",", "")
+            }
+        }
+        return valLimpio.toDoubleOrNull() ?: 0.0
     }
 
     private fun parsearTextoSinpe(textoOriginal: String): SinpeDatosExtraidos {
@@ -427,25 +472,6 @@ class MainActivity : AppCompatActivity() {
             if (mRefDigitos.find()) {
                 referencia = mRefDigitos.group(0) ?: ""
             }
-        }
-
-        fun parsearStringAMonto(rawVal: String): Double {
-            var valLimpio = rawVal.replace(" ", "")
-            if (valLimpio.contains(",") && valLimpio.contains(".")) {
-                if (valLimpio.lastIndexOf(',') > valLimpio.lastIndexOf('.')) {
-                    valLimpio = valLimpio.replace(".", "").replace(",", ".")
-                } else {
-                    valLimpio = valLimpio.replace(",", "")
-                }
-            } else if (valLimpio.contains(",")) {
-                val partes = valLimpio.split(",")
-                valLimpio = if (partes.last().length == 2) {
-                    partes.dropLast(1).joinToString("") + "." + partes.last()
-                } else {
-                    valLimpio.replace(",", "")
-                }
-            }
-            return valLimpio.toDoubleOrNull() ?: 0.0
         }
 
         // 5. Extraer Monto
