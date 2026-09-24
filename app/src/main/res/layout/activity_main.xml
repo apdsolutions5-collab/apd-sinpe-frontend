@@ -1,19 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fondo_oscuro"
+    android:fillViewport="true"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical"
+        android:padding="24dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Encabezado Corporativo A.P.D. -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A.P.D. Software Solutions"
+            android:textColor="@color/azul_acento"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Validación de Comprobante SINPE"
+            android:textColor="@color/texto_principal"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Campo: Monto Esperado -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Monto esperado (CRC)"
+            app:boxStrokeColor="@color/azul_principal"
+            app:hintTextColor="@color/azul_acento">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMontoEsperado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:textColor="@color/texto_principal" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Sección Cargar Comprobante -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/tarjeta_oscura"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:id="@+id/btnSeleccionarImagen"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/ivComprobante"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:contentDescription="Comprobante"
+                    app:tint="@color/azul_acento" />
+
+                <TextView
+                    android:id="@+id/tvEstadoImagen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Haz clic para seleccionar comprobante"
+                    android:textColor="@color/texto_secundario"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Botón de Validar -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnValidar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/azul_principal"
+            android:text="Validar Pago"
+            android:textColor="@color/texto_principal"
+            android:textSize="16sp"
+            app:cornerRadius="8dp" />
+
+        <!-- Tarjeta de Resultados -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardResultado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/superficie_oscura"
+            app:cardCornerRadius="12dp"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvEstatusPago"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estatus: --"
+                    android:textColor="@color/estado_valido"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvNumeroReferencia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Referencia: --"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvConfianzaOCR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Confianza OCR: --%"
+                    android:textColor="@color/texto_secundario"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</ScrollView>
