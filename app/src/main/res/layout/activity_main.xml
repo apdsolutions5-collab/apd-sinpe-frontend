@@ -13,76 +13,239 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
-        <!-- Encabezado Corporativo A.P.D. -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Header Card / Header Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="A.P.D. Software Solutions"
-            android:textColor="@color/azul_acento"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Validación de Comprobante SINPE"
-            android:textColor="@color/texto_principal"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_verified"
+                app:tint="@color/azul_acento"
+                android:background="@color/tarjeta_oscura"
+                android:padding="8dp"
+                android:contentDescription="@string/cd_logo" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/company_name"
+                    android:textColor="@color/azul_acento"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.05"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_validation"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Campo: Monto Esperado -->
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:hint="Monto esperado (CRC)"
+            android:layout_marginBottom="20dp"
+            android:hint="@string/hint_monto_esperado"
+            app:startIconDrawable="@drawable/ic_attach_money"
+            app:startIconTint="@color/azul_acento"
             app:boxStrokeColor="@color/azul_principal"
-            app:hintTextColor="@color/azul_acento">
+            app:hintTextColor="@color/azul_acento"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etMontoEsperado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
-                android:textColor="@color/texto_principal" />
+                android:textColor="@color/texto_principal"
+                android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Sección Cargar Comprobante -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_comprobante"
+            android:textColor="@color/texto_principal"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardSeleccionarImagen"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginTop="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             app:cardBackgroundColor="@color/tarjeta_oscura"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp">
 
             <LinearLayout
-                android:id="@+id/btnSeleccionarImagen"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/ivComprobante"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:contentDescription="Comprobante"
-                    app:tint="@color/azul_acento" />
-
-                <TextView
-                    android:id="@+id/tvEstadoImagen"
-                    android:layout_width="wrap_content"
+                <!-- Unselected View State -->
+                <LinearLayout
+                    android:id="@+id/layoutEstadoVacio"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Haz clic para seleccionar comprobante"
-                    android:textColor="@color/texto_secundario"
-                    android:textSize="14sp" />
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_receipt"
+                        app:tint="@color/azul_acento"
+                        android:contentDescription="@string/label_comprobante" />
+
+                    <TextView
+                        android:id="@+id/tvEstadoImagen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/prompt_upload_comprobante"
+                        android:textColor="@color/texto_secundario"
+                        android:textSize="14sp"
+                        android:gravity="center" />
+
+                    <!-- Action Buttons: Cámara y Galería -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTomarFoto"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:text="@string/btn_camara"
+                            android:textColor="@color/texto_principal"
+                            app:backgroundTint="@color/superficie_oscura"
+                            app:icon="@drawable/ic_camera"
+                            app:iconTint="@color/azul_acento"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSeleccionarGaleria"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:text="@string/btn_galeria"
+                            android:textColor="@color/texto_principal"
+                            app:backgroundTint="@color/superficie_oscura"
+                            app:icon="@drawable/ic_gallery"
+                            app:iconTint="@color/azul_acento"
+                            app:cornerRadius="10dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Selected View State with Image Preview -->
+                <RelativeLayout
+                    android:id="@+id/layoutEstadoCargado"
+                    android:layout_width="match_parent"
+                    android:layout_height="260dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/ivComprobante"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/cd_preview" />
+
+                    <!-- Overlay Top Badge -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_margin="12dp"
+                        android:background="@color/estado_valido_bg"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="@color/estado_valido"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="@string/badge_comprobante_cargado"
+                            android:textColor="@color/estado_valido"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Overlay Bottom Actions Bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="#CC0F172A"
+                        android:padding="8dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCambiarImagen"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/btn_cambiar_foto"
+                            android:textColor="@color/azul_acento"
+                            app:icon="@drawable/ic_camera"
+                            app:iconTint="@color/azul_acento" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEliminarImagen"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/btn_quitar"
+                            android:textColor="@color/estado_invalido"
+                            app:icon="@drawable/ic_close"
+                            app:iconTint="@color/estado_invalido" />
+                    </LinearLayout>
+                </RelativeLayout>
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -91,56 +254,91 @@
             android:id="@+id/btnValidar"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:backgroundTint="@color/azul_principal"
-            android:text="Validar Pago"
+            android:text="@string/btn_validar"
             android:textColor="@color/texto_principal"
             android:textSize="16sp"
-            app:cornerRadius="8dp" />
+            android:textStyle="bold"
+            app:icon="@drawable/ic_verified"
+            app:iconGravity="textStart"
+            app:iconTint="@color/texto_principal"
+            app:cornerRadius="12dp" />
 
         <!-- Tarjeta de Resultados -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardResultado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/superficie_oscura"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="@color/tarjeta_oscura"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
             tools:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <TextView
-                    android:id="@+id/tvEstatusPago"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Estatus: --"
-                    android:textColor="@color/estado_valido"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/tvEstatusPago"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Estatus: Comprobante Válido"
+                        android:textColor="@color/estado_valido"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/ivIconoEstatus"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="@color/estado_valido"
+                        android:contentDescription="@string/cd_icon" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/superficie_oscura"
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
                     android:id="@+id/tvNumeroReferencia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Referencia: --"
+                    android:text="Número de Referencia: SINPE-84920481"
                     android:textColor="@color/texto_principal"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvMontoDetectado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Monto Detectado: ₡ 15,000.00"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="6dp" />
 
                 <TextView
                     android:id="@+id/tvConfianzaOCR"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Confianza OCR: --%"
+                    android:text="Confianza de Lectura (OCR): 98%"
                     android:textColor="@color/texto_secundario"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

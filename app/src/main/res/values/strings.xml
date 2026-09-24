@@ -1,3 +1,18 @@
 <resources>
-    <string name="app_name">apd-sinpe-check</string>
+    <string name="app_name">A.P.D. SINPE Check</string>
+    <string name="company_name">A.P.D. Software Solutions</string>
+    <string name="title_validation">Validación de Comprobante SINPE</string>
+    <string name="hint_monto_esperado">Monto esperado (CRC ₡)</string>
+    <string name="label_comprobante">Comprobante de Pago</string>
+    <string name="prompt_upload_comprobante">Selecciona o toma una foto del comprobante SINPE</string>
+    <string name="btn_camara">Cámara</string>
+    <string name="btn_galeria">Galería</string>
+    <string name="badge_comprobante_cargado">Comprobante cargado</string>
+    <string name="btn_cambiar_foto">Cambiar foto</string>
+    <string name="btn_quitar">Quitar</string>
+    <string name="btn_validar">Validar Comprobante SINPE</string>
+    <string name="opciones_titulo">Seleccionar fuente de imagen</string>
+    <string name="cd_logo">APD Logo</string>
+    <string name="cd_preview">Vista previa comprobante</string>
+    <string name="cd_icon">Icono de estado</string>
 </resources>
