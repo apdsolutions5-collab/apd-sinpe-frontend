@@ -57,7 +57,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Campo: Monto Esperado -->
+        <!-- Campo: Monto Esperado de la Venta (EditText) -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
@@ -265,7 +265,7 @@
             app:iconTint="@color/texto_principal"
             app:cornerRadius="12dp" />
 
-        <!-- Tarjeta de Resultados -->
+        <!-- Tarjeta de Resultado con Datos Extraídos en Palabras Normales -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardResultado"
             android:layout_width="match_parent"
@@ -282,63 +282,379 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Dynamic Status Header -->
                 <LinearLayout
+                    android:id="@+id/layoutIndicadorHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:padding="12dp"
+                    android:background="@color/estado_cargando_bg"
+                    android:layout_marginBottom="16dp">
 
-                    <TextView
-                        android:id="@+id/tvEstatusPago"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Estatus: Comprobante Válido"
-                        android:textColor="@color/estado_valido"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                    <ProgressBar
+                        android:id="@+id/progressBarCargando"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:indeterminateTint="@color/azul_acento"
+                        android:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/ivIconoEstatus"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_check_circle"
                         app:tint="@color/estado_valido"
+                        android:visibility="gone"
                         android:contentDescription="@string/cd_icon" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:id="@+id/tvEstatusPago"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/estado_cargando_titulo"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvEstatusDescripcion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/estado_cargando_desc"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="12sp" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <View
+                <!-- Detailed Extracted Info -->
+                <LinearLayout
+                    android:id="@+id/layoutDetallesResultado"
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/superficie_oscura"
-                    android:layout_marginBottom="12dp" />
-
-                <TextView
-                    android:id="@+id/tvNumeroReferencia"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Número de Referencia: SINPE-84920481"
-                    android:textColor="@color/texto_principal"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="6dp" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <TextView
-                    android:id="@+id/tvMontoDetectado"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Monto Detectado: ₡ 15,000.00"
-                    android:textColor="@color/texto_principal"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="6dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_detalles_comprobante"
+                        android:textColor="@color/azul_acento"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
 
-                <TextView
-                    android:id="@+id/tvConfianzaOCR"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Confianza de Lectura (OCR): 98%"
-                    android:textColor="@color/texto_secundario"
-                    android:textSize="13sp" />
+                    <!-- Emisor -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_person"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_emisor"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvEmisor"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="Jayden Jabar Castro Saenz"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Receptor -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_person"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_receptor"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceptor"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="Maria Belen Segura Vargas"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Teléfono -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_phone"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_telefono_origen"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvTelefonoOrigen"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="72697041"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Monto -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_attach_money"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_monto_detectado"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvMontoDetectado"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="₡ 24,999.99"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- N° Referencia -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_verified"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_numero_referencia"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvNumeroReferencia"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="2026092010284000529003800"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Fecha y Hora -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_fecha_hora"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvFechaHora"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="20 Sep 2026, 7:32 PM"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Duplicado Status -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_warning"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_es_duplicado"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvEsDuplicado"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="Sí, comprobante ya usado"
+                            android:textColor="@color/estado_invalido"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Confianza OCR -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_description"
+                            app:tint="@color/texto_secundario"
+                            android:contentDescription="@string/cd_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/label_confianza_ocr"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvConfianzaOCR"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="89.65% (Lectura Alta)"
+                            android:textColor="@color/azul_acento"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+                    </LinearLayout>
+
+                    <!-- Texto OCR Raw Box -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_texto_ocr_raw"
+                        android:textColor="@color/texto_secundario"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvTextoOcrRaw"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/superficie_oscura"
+                        android:padding="12dp"
+                        android:textColor="@color/texto_secundario"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace"
+                        android:text="Z BAC\nNotificación de transferencia SINPE Móvil\nHola, Le informamos que JAYDEN JABAR CASTRO SAENZ realizó una transferencia por medio de SINPE Móvil al teléfono N 72697041 a nombre de MARIA BELEN SEGURA VARGAS.\nReferencia: 2026092010284000529003800\nFecha: 20 septiembre 2026 7:32 PM\nMonto: ₡24,999.99" />
+
+                </LinearLayout>
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
