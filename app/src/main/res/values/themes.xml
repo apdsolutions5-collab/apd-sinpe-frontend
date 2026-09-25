@@ -4,6 +4,8 @@
         <item name="colorOnPrimary">@color/texto_principal</item>
         <item name="android:colorBackground">@color/fondo_oscuro</item>
         <item name="colorSurface">@color/tarjeta_oscura</item>
+        <item name="android:statusBarColor">@color/fondo_oscuro</item>
+        <item name="android:navigationBarColor">@color/fondo_oscuro</item>
     </style>
 
     <style name="Theme.Apdsinpecheck" parent="Base.Theme.Apdsinpecheck" />
