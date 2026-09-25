@@ -319,8 +319,8 @@ class MainActivity : AppCompatActivity() {
 
                     if (rawText.isBlank()) {
                         mostrarEstadoFraude(
-                            getString(R.string.estado_alerta_corrupto_titulo),
-                            getString(R.string.estado_alerta_corrupto_desc),
+                            getString(R.string.estado_alerta_sin_texto_titulo),
+                            getString(R.string.estado_alerta_sin_texto_desc),
                             mostrarDetalles = false
                         )
                         return@addOnSuccessListener

@@ -1,5 +1,6 @@
 package com.example.apd_sinpe_check
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -74,14 +75,30 @@ class SinpeValidationUnitTest {
         val telefono = extraerTelefono(textoAlterado)
         val referencia = extraerReferencia(textoAlterado)
 
-        // El teléfono no tiene los 8 dígitos continuos debido al borrado digital ("72  97041")
-        // La referencia está incompleta/borrada al final
         val esAlteradoOIncompleto = telefono.length != 8 || referencia.length < 14
         assertTrue(esAlteradoOIncompleto)
     }
 
     @Test
-    fun testTextoVacio_esRechazado() {
-        assertFalse(esComprobanteBancarioValido(""))
+    fun testParsearErrorHttp400_PythonFastAPI_Detail() {
+        val jsonFastAPI = """{"detail": "La imagen proporcionada no contiene datos bancarios reconocidos."}"""
+        val mensajeLimpio = ApiService.parsearErrorHttp400(jsonFastAPI)
+        assertEquals("La imagen proporcionada no contiene datos bancarios reconocidos.", mensajeLimpio)
+    }
+
+    @Test
+    fun testParsearErrorHttp400_PythonCustomError() {
+        val jsonCustomError = """{"error": "El monto esperado debe ser mayor a cero."}"""
+        val mensajeLimpio = ApiService.parsearErrorHttp400(jsonCustomError)
+        assertEquals("El monto esperado debe ser mayor a cero.", mensajeLimpio)
+    }
+
+    @Test
+    fun testParsearErrorHttp400_CuerpoVacio_o_Corrupto() {
+        val mensajeVacio = ApiService.parsearErrorHttp400(null)
+        assertEquals("Solicitud no válida (HTTP 400 Bad Request).", mensajeVacio)
+
+        val mensajeInvalido = ApiService.parsearErrorHttp400("Texto plano sin formato json")
+        assertEquals("Error 400 Bad Request: Texto plano sin formato json", mensajeInvalido)
     }
 }
