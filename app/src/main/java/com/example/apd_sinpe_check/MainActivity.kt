@@ -43,7 +43,7 @@ data class SinpeDatosExtraidos(
     val montoFormateado: String = "",
     val referencia: String = "",
     val fechaHora: String = "",
-    val ocrConfianza: Double = 98.2
+    val ocrConfianza: Double = 98.2,
 )
 
 class MainActivity : AppCompatActivity() {
@@ -451,25 +451,22 @@ class MainActivity : AppCompatActivity() {
         val ultComa = valLimpio.lastIndexOf(',')
         val ultSeparador = maxOf(ultPunto, ultComa)
 
-        if (ultSeparador != -1) {
+        valLimpio = if (ultSeparador != -1) {
             val parteDecimalCandidate = valLimpio.substring(ultSeparador + 1)
-
-            // Si después del último separador hay exactamente 1 o 2 dígitos, es el separador decimal
             if (parteDecimalCandidate.length in 1..2) {
                 val parteEntera = valLimpio.substring(0, ultSeparador).replace(".", "").replace(",", "")
-                valLimpio = "$parteEntera.$parteDecimalCandidate"
+                "$parteEntera.$parteDecimalCandidate"
             } else {
-                // Si tiene 3 dígitos o más (ej: 8.000), es separador de miles
-                valLimpio = valLimpio.replace(".", "").replace(",", "")
+                valLimpio.replace(".", "").replace(",", "")
             }
         } else {
-            valLimpio = valLimpio.replace(".", "").replace(",", "")
+            valLimpio.replace(".", "").replace(",", "")
         }
 
         return valLimpio.toDoubleOrNull() ?: 0.0
     }
 
-    private val PALABRAS_PROHIBIDAS = setOf(
+    private val palabrasProhibidas = setOf(
         "comisión", "comision", "motivo", "documento", "referencia", "comprobante",
         "transferencia", "sinpe", "móvil", "movil", "monto", "debitado", "acreditado",
         "transferido", "ver", "cuentas", "nueva", "transacción", "transaccion",
@@ -487,7 +484,7 @@ class MainActivity : AppCompatActivity() {
 
         val palabras = l.lowercase(Locale.getDefault()).split("\\s+".toRegex())
         for (p in palabras) {
-            if (PALABRAS_PROHIBIDAS.contains(p.trim('.', ',', ';', ':'))) {
+            if (palabrasProhibidas.contains(p.trim('.', ',', ';', ':'))) {
                 return false
             }
         }
@@ -716,13 +713,15 @@ class MainActivity : AppCompatActivity() {
                     if (mSame.find()) {
                         montoColones = parsearStringAMonto(mSame.group(1) ?: "0")
                         break
-                    } else if (i > 0) {
+                    }
+                    if (i > 0) {
                         val mPrev = pNum.matcher(lineas[i - 1])
                         if (mPrev.find()) {
                             montoColones = parsearStringAMonto(mPrev.group(1) ?: "0")
                             break
                         }
-                    } else if (i < lineas.size - 1) {
+                    }
+                    if (i < lineas.size - 1) {
                         val mNext = pNum.matcher(lineas[i + 1])
                         if (mNext.find()) {
                             montoColones = parsearStringAMonto(mNext.group(1) ?: "0")
