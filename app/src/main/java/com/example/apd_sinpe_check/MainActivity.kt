@@ -290,6 +290,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun esComprobanteBancarioValido(texto: String): Boolean {
+        val t = texto.lowercase(Locale.getDefault())
+        val palabrasClaveBancarias = listOf(
+            "sinpe", "bac", "bcr", "banco", "transferencia", "comprobante",
+            "notificación", "notificacion", "monedero", "davivienda", "popular",
+            "scotiabank", "wink", "promerica", "lafise", "monto", "referencia", "transacción", "transaccion"
+        )
+
+        var coincidenciaCount = 0
+        for (palabra in palabrasClaveBancarias) {
+            if (t.contains(palabra)) {
+                coincidenciaCount++
+            }
+        }
+        return coincidenciaCount >= 2
+    }
+
     private fun procesarComprobanteRealConOCR(uri: Uri) {
         try {
             val inputImage = InputImage.fromFilePath(this, uri)
@@ -302,8 +319,18 @@ class MainActivity : AppCompatActivity() {
 
                     if (rawText.isBlank()) {
                         mostrarEstadoFraude(
-                            "Alerta de Inconsistencia / Fraude",
-                            "No fue posible leer ningún texto en la imagen. La foto es ilegible o no corresponde a un comprobante.",
+                            getString(R.string.estado_alerta_corrupto_titulo),
+                            getString(R.string.estado_alerta_corrupto_desc),
+                            mostrarDetalles = false
+                        )
+                        return@addOnSuccessListener
+                    }
+
+                    // KAN-47: Validación de imagen no bancaria
+                    if (!esComprobanteBancarioValido(rawText)) {
+                        mostrarEstadoFraude(
+                            getString(R.string.estado_alerta_no_bancario_titulo),
+                            getString(R.string.estado_alerta_no_bancario_desc),
                             mostrarDetalles = false
                         )
                         return@addOnSuccessListener
@@ -311,7 +338,7 @@ class MainActivity : AppCompatActivity() {
 
                     val datosExtraidos = parsearTextoSinpe(rawText)
 
-                    // Autocompletar dinámicamente el Número de comprobante / referencia en la interfaz (KAN-45)
+                    // Autocompletar dinámicamente los campos en la interfaz (KAN-45)
                     tvNumeroReferencia.text = datosExtraidos.referencia.ifBlank { "No detectado" }
                     tvEmisor.text = datosExtraidos.emisor.ifBlank { "No detectado" }
                     tvReceptor.text = datosExtraidos.receptor.ifBlank { "No detectado" }
@@ -320,6 +347,10 @@ class MainActivity : AppCompatActivity() {
                     tvMontoDetectado.text = datosExtraidos.montoFormateado
                     tvConfianzaOCR.text = String.format(Locale.getDefault(), "%.2f%% (Lectura OCR Real)", datosExtraidos.ocrConfianza)
                     tvTextoOcrRaw.text = rawText
+
+                    // KAN-47: Detección de edición / borrado digital (Teléfono o Referencia incompletos)
+                    val esAlteradoOIncompleto = (datosExtraidos.telefono.isBlank() || datosExtraidos.telefono.length != 8) ||
+                            (datosExtraidos.referencia.isBlank() || datosExtraidos.referencia.length < 14)
 
                     // Verificación de duplicado
                     val claveDuplicado = datosExtraidos.referencia.ifBlank { rawText.hashCode().toString() }
@@ -331,12 +362,21 @@ class MainActivity : AppCompatActivity() {
 
                     val esMontoIncorrecto = montoEsperado > 0 && datosExtraidos.monto > 0 && abs(datosExtraidos.monto - montoEsperado) >= 0.01
 
-                    // Evaluación de respuesta de la validación (KAN-45)
-                    if (esDuplicado && esMontoIncorrecto) {
+                    // Evaluación de respuesta de la validación (KAN-45 y KAN-47)
+                    if (esAlteradoOIncompleto) {
+                        mostrarEstadoFraude(
+                            "¡Alerta de Inconsistencia / Comprobante Alterado!",
+                            "La imagen presenta datos incompletos o borrados digitalmente (El número de teléfono o la referencia están incompletos).",
+                            mostrarDetalles = true
+                        )
+                        tvEsDuplicado.text = getString(R.string.incompleto_alterado)
+                        tvEsDuplicado.setTextColor(getColor(R.color.estado_invalido))
+
+                    } else if (esDuplicado && esMontoIncorrecto) {
                         val strMontoEsp = String.format(Locale.getDefault(), "%,.2f", montoEsperado)
                         mostrarEstadoFraude(
                             "¡Alerta de Fraude / Inconsistencia!",
-                            "1. El comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Foto duplicada" }}) ya ha sido registrado previamente.\n2. El monto detectado (${datosExtraidos.montoFormateado}) NO coincide con el monto esperado (₡$strMontoEsp).",
+                            "1. El comprobante (Ref: ${datosExtraidos.referencia}) ya ha sido registrado previamente.\n2. El monto detectado (${datosExtraidos.montoFormateado}) NO coincide con el monto esperado (₡$strMontoEsp).",
                             mostrarDetalles = true
                         )
                         tvEsDuplicado.text = getString(R.string.duplicado_si)
@@ -345,7 +385,7 @@ class MainActivity : AppCompatActivity() {
                     } else if (esDuplicado) {
                         mostrarEstadoFraude(
                             "¡Alerta: Comprobante Duplicado!",
-                            "Este comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Misma foto" }}) ya fue procesado anteriormente en el sistema.",
+                            "Este comprobante (Ref: ${datosExtraidos.referencia}) ya fue procesado anteriormente en el sistema.",
                             mostrarDetalles = true
                         )
                         tvEsDuplicado.text = getString(R.string.duplicado_si)
@@ -385,8 +425,8 @@ class MainActivity : AppCompatActivity() {
                     btnValidar.isEnabled = true
                     e.printStackTrace()
                     mostrarEstadoFraude(
-                        "Alerta de Error / Inconsistencia",
-                        "No se pudo procesar la imagen seleccionada: ${e.localizedMessage}",
+                        getString(R.string.estado_alerta_corrupto_titulo),
+                        "${getString(R.string.estado_alerta_corrupto_desc)} Detalle: ${e.localizedMessage}",
                         mostrarDetalles = false
                     )
                 }
@@ -394,8 +434,8 @@ class MainActivity : AppCompatActivity() {
             btnValidar.isEnabled = true
             e.printStackTrace()
             mostrarEstadoFraude(
-                "Alerta de Error",
-                "Error al abrir la imagen seleccionada.",
+                getString(R.string.estado_alerta_corrupto_titulo),
+                getString(R.string.estado_alerta_corrupto_desc),
                 mostrarDetalles = false
             )
         }
@@ -429,6 +469,49 @@ class MainActivity : AppCompatActivity() {
         return valLimpio.toDoubleOrNull() ?: 0.0
     }
 
+    private val PALABRAS_PROHIBIDAS = setOf(
+        "comisión", "comision", "motivo", "documento", "referencia", "comprobante",
+        "transferencia", "sinpe", "móvil", "movil", "monto", "debitado", "acreditado",
+        "transferido", "ver", "cuentas", "nueva", "transacción", "transaccion",
+        "detalle", "concepto", "entidad", "iban", "teléfono", "telefono", "origen",
+        "destino", "destinatario", "realizado", "bcr", "bac", "bn", "tbcr", "hola",
+        "notificación", "notificacion", "medio", "número", "numero", "monedero", "pago", "consola"
+    )
+
+    private fun esPalabraDeNombreValida(linea: String): Boolean {
+        val l = linea.trim()
+        if (l.isBlank() || l.length < 3) return false
+
+        // Si la línea contiene dígitos (números), no es un nombre de persona
+        if (l.contains("\\d".toRegex())) return false
+
+        val palabras = l.lowercase(Locale.getDefault()).split("\\s+".toRegex())
+        for (p in palabras) {
+            if (PALABRAS_PROHIBIDAS.contains(p.trim('.', ',', ';', ':'))) {
+                return false
+            }
+        }
+
+        return l.matches("^[A-ZÁÉÍÓÚÑa-záéíóúñ\\s.'-]{3,45}$".toRegex())
+    }
+
+    private fun extraerNombreArribaDeEtiqueta(lineas: List<String>, labelIndex: Int): String {
+        val candidateNames = mutableListOf<String>()
+        var idx = labelIndex - 1
+
+        while (idx >= 0 && candidateNames.size < 3) {
+            val candidate = lineas[idx].trim()
+            if (esPalabraDeNombreValida(candidate)) {
+                candidateNames.add(0, candidate) // Agregar al inicio para mantener orden
+            } else if (candidateNames.isNotEmpty()) {
+                break
+            }
+            idx--
+        }
+
+        return candidateNames.joinToString(" ")
+    }
+
     private fun parsearTextoSinpe(textoOriginal: String): SinpeDatosExtraidos {
         var emisor = ""
         var receptor = ""
@@ -440,70 +523,231 @@ class MainActivity : AppCompatActivity() {
         var fecha = ""
         var hora = ""
 
+        val lineas = textoOriginal.split("\n", "\r").map { it.trim() }.filter { it.isNotEmpty() }
         val textoUnificado = textoOriginal.replace("\n", " ").replace("\r", " ").replace("\\s+".toRegex(), " ")
 
-        // 1. Extraer Receptor
-        val pReceptor = Pattern.compile("(?i)(?:a\\s*nombre\\s*de|para|destino|favor\\s*de)[:.\\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,40}?)(?=[.\\d\n]|BAC|Ref|Fecha|Monto|$)")
-        val mReceptor = pReceptor.matcher(textoUnificado)
-        if (mReceptor.find()) {
-            receptor = mReceptor.group(1)?.trim()?.trimEnd('.', ',', ';') ?: ""
-        }
-
-        // 2. Extraer Emisor
-        val pEmisor = Pattern.compile("(?i)(?:informamos\\s*que|de|origen)[:.\\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,40}?)(?=\\s+(?:realizó|realizo|hizo|envió|envio)|[.\\d]|$)")
-        val mEmisor = pEmisor.matcher(textoUnificado)
-        if (mEmisor.find()) {
-            emisor = mEmisor.group(1)?.trim()?.trimEnd('.', ',', ';') ?: ""
-        }
-
-        // 3. Extraer Teléfono (8 dígitos)
-        val pTel = Pattern.compile("(?:teléfono|tel|móvil|celular|n°|N°)?[:.\\s]*\\b([24678][0-9]{7})\\b")
+        // ==========================================
+        // 1. EXTRAER TELÉFONO (8 DÍGITOS)
+        // ==========================================
+        val pTel = Pattern.compile("(?:teléfono|tel|móvil|monedero|celular|n°|N°)?[:.\\s]*\\b([24678][0-9]{3}[-\\s]?[0-9]{4})\\b")
         val mTel = pTel.matcher(textoUnificado)
         if (mTel.find()) {
-            telefono = mTel.group(1) ?: ""
+            telefono = mTel.group(1)?.replace("-", "")?.replace(" ", "") ?: ""
         } else {
-            val pTelSimple = Pattern.compile("\\b[24678][0-9]{7}\\b")
-            val mTelSimple = pTelSimple.matcher(textoUnificado)
-            if (mTelSimple.find()) {
-                telefono = mTelSimple.group(0) ?: ""
-            }
-        }
-
-        // 4. Extraer Referencia
-        val pRef = Pattern.compile("(?i)(?:referencia|ref|comprobante|num|n°)?[:.\\s]*([0-9]{14,25})")
-        val mRef = pRef.matcher(textoUnificado)
-        if (mRef.find()) {
-            referencia = mRef.group(1) ?: ""
-        } else {
-            val pRefDigitos = Pattern.compile("\\b[0-9]{14,25}\\b")
-            val mRefDigitos = pRefDigitos.matcher(textoUnificado)
-            if (mRefDigitos.find()) {
-                referencia = mRefDigitos.group(0) ?: ""
-            }
-        }
-
-        // 5. Extraer Monto
-        val pMontoConSímbolo = Pattern.compile("(?i)(?:₡|¢|CRC|\\$|USD|Monto[:.\\s]*|[C_c])\\s*([0-9]{1,3}(?:[,.][0-9]{3})*(?:[,.][0-9]{2}))")
-        val mMontoConSímbolo = pMontoConSímbolo.matcher(textoUnificado)
-
-        if (mMontoConSímbolo.find()) {
-            val strMonto = mMontoConSímbolo.group(1) ?: "0"
-            montoColones = parsearStringAMonto(strMonto)
-        }
-
-        if (montoColones == 0.0) {
-            val pMontoDecimal = Pattern.compile("\\b([0-9]{1,3}(?:[,.][0-9]{3})*[,.][0-9]{2})\\b")
-            val mMontoDecimal = pMontoDecimal.matcher(textoOriginal)
-            while (mMontoDecimal.find()) {
-                val candidata = mMontoDecimal.group(1) ?: ""
-                val valorDecimal = parsearStringAMonto(candidata)
-                if (valorDecimal > 0.0 && !referencia.contains(candidata.replace("[,.]".toRegex(), ""))) {
-                    montoColones = valorDecimal
+            for (linea in lineas) {
+                val pTelSimple = Pattern.compile("\\b([24678][0-9]{3}[-\\s]?[0-9]{4})\\b")
+                val mTelSimple = pTelSimple.matcher(linea)
+                if (mTelSimple.find()) {
+                    telefono = mTelSimple.group(1)?.replace("-", "")?.replace(" ", "") ?: ""
                     break
                 }
             }
         }
 
+        // ==========================================
+        // 2. EXTRAER EMISOR Y RECEPTOR (REGLA DE SECUENCIA PARA BCR Y COLUMNAS)
+        // ==========================================
+        var ibanIndex = -1
+        var numeroCuentaOrigen = ""
+        for (i in lineas.indices) {
+            val l = lineas[i]
+            if ((l.startsWith("CR", ignoreCase = true) || l.startsWith("AH", ignoreCase = true) || l.startsWith("CTE", ignoreCase = true)) &&
+                l.matches(".*[0-9]{8,}.*".toRegex())) {
+                ibanIndex = i
+                numeroCuentaOrigen = l
+                break
+            }
+        }
+
+        if (ibanIndex != -1) {
+            // Recolectar nombres entre la línea del IBAN y el Teléfono
+            val lineasNombres = mutableListOf<String>()
+            var idx = ibanIndex + 1
+            while (idx < lineas.size) {
+                val l = lineas[idx].trim()
+                if (telefono.isNotBlank() && l.replace("-", "").replace(" ", "").contains(telefono)) {
+                    break // Llegamos al teléfono!
+                }
+                if (esPalabraDeNombreValida(l)) {
+                    lineasNombres.add(l)
+                } else if (lineasNombres.isNotEmpty()) {
+                    break
+                }
+                idx++
+            }
+
+            if (lineasNombres.isNotEmpty()) {
+                // La PRIMERA línea de nombre es el EMISOR (ej: "CASTRO VEGA ESTEBAN")
+                emisor = lineasNombres[0]
+
+                // Las líneas SIGUIENTES son el RECEPTOR (ej: "VASQUEZ REYES GLORIA DE LOS ANGELES")
+                if (lineasNombres.size > 1) {
+                    receptor = lineasNombres.subList(1, lineasNombres.size).joinToString(" ")
+                }
+            }
+        }
+
+        // ==========================================
+        // BÚSQUEDA SECUNDARIA DE RECEPTOR SI AÚN ESTÁ VACÍO
+        // ==========================================
+        // Pass 2A: BN (Estructura "MARYENI ALEXANDRA FERNANDEZ CASTRO \n Destinatario:")
+        if (receptor.isBlank()) {
+            for (i in lineas.indices) {
+                val linea = lineas[i]
+                if (linea.contains("Destinatario", ignoreCase = true) ||
+                    linea.contains("Destino", ignoreCase = true)) {
+
+                    val nombreArriba = extraerNombreArribaDeEtiqueta(lineas, i)
+                    if (nombreArriba.isNotBlank()) {
+                        receptor = nombreArriba
+                        break
+                    }
+                }
+            }
+        }
+
+        // Pass 2B: BAC / Texto fluido -> "a nombre de MARÍA BELÉN...", "a favor de X"
+        if (receptor.isBlank()) {
+            val pReceptorA = Pattern.compile("(?i)(?:a\\s*nombre\\s*de|a\\s*favor\\s*de|para|beneficiario|receptor)[:.\\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,40}?)(?=[.\\d]|BAC|Ref|Fecha|Monto|Entidad|IBAN|Teléfono|$)")
+            val mReceptorA = pReceptorA.matcher(textoUnificado)
+            if (mReceptorA.find()) {
+                val cand = mReceptorA.group(1)?.trim()?.trimEnd('.', ',', ';') ?: ""
+                if (esPalabraDeNombreValida(cand)) {
+                    receptor = cand
+                }
+            }
+        }
+
+        // ==========================================
+        // BÚSQUEDA SECUNDARIA DE EMISOR SI AÚN ESTÁ VACÍO
+        // ==========================================
+        // Pass 3A: BN -> "ALEMARK GABRIEL MONGE CASTRO \n Realizado por:"
+        if (emisor.isBlank()) {
+            for (i in lineas.indices) {
+                val linea = lineas[i]
+                if (linea.contains("Realizado por", ignoreCase = true) ||
+                    linea.contains("Transferido desde", ignoreCase = true)) {
+
+                    val nombreArriba = extraerNombreArribaDeEtiqueta(lineas, i)
+                    if (nombreArriba.isNotBlank()) {
+                        emisor = nombreArriba
+                        break
+                    }
+                }
+            }
+        }
+
+        // Pass 3B: BAC -> "Le informamos que JAYDEN JABAR CASTRO SAENZ realizó..."
+        if (emisor.isBlank()) {
+            val pEmisorA = Pattern.compile("(?i)(?:informamos\\s*que|de|origen|emisor)[:.\\s]+([A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,40}?)(?=\\s+(?:realizó|realizo|hizo|envió|envio)|[.\\d]|$)")
+            val mEmisorA = pEmisorA.matcher(textoUnificado)
+            if (mEmisorA.find()) {
+                val cand = mEmisorA.group(1)?.trim()?.trimEnd('.', ',', ';') ?: ""
+                if (esPalabraDeNombreValida(cand)) {
+                    emisor = cand
+                }
+            }
+        }
+
+        // Si no se encontró el nombre de la persona en la Cuenta Origen, usar el número de cuenta/IBAN
+        if (emisor.isBlank() && numeroCuentaOrigen.isNotBlank()) {
+            emisor = numeroCuentaOrigen
+        }
+
+        // ==========================================
+        // 4. EXTRAER REFERENCIA
+        // ==========================================
+        val textoSinEspaciosEnNumeros = textoUnificado.replace("(?<=\\d)\\s+(?=\\d)".toRegex(), "")
+        val pRef = Pattern.compile("(?i)(?:referencia|ref|comprobante|transacción|transaccion|documento|num|n°)?[:.\\s]*([0-9]{14,25}|FT[0-9A-Z]{8,15})")
+        val mRef = pRef.matcher(textoSinEspaciosEnNumeros)
+        if (mRef.find()) {
+            referencia = mRef.group(1) ?: ""
+        } else {
+            for (linea in lineas) {
+                val pRefDigits = Pattern.compile("\\b([0-9]{14,25}|FT[0-9A-Z]{8,15})\\b")
+                val mRefDigits = pRefDigits.matcher(linea)
+                if (mRefDigits.find()) {
+                    referencia = mRefDigits.group(1) ?: ""
+                    break
+                }
+            }
+        }
+
+        // ==========================================
+        // 5. EXTRAER MONTO Y MONEDA
+        // ==========================================
+        // Pass 5A: Colones con símbolo o prefijo de OCR (ej: ₡, ¢, CRC, C, c, e, E, €) + número decimal
+        val pColones1 = Pattern.compile("(?i)(?:₡|¢|CRC|Colones|[C_c]|[e_E]|€|@)\\s*([0-9]{1,3}(?:[,.][0-9]{3})*(?:[,.][0-9]{2}))")
+        val mColones1 = pColones1.matcher(textoUnificado)
+        while (mColones1.find()) {
+            val strVal = mColones1.group(1) ?: "0"
+            val valParsed = parsearStringAMonto(strVal)
+            if (valParsed > 0.0) {
+                montoColones = valParsed
+                break
+            }
+        }
+
+        // Pass 5B: "2.000,00 Colones"
+        if (montoColones == 0.0) {
+            val pColones2 = Pattern.compile("([0-9]{1,3}(?:[,.][0-9]{3})*(?:[,.][0-9]{2}))\\s*(?:Colones|CRC|₡)")
+            val mColones2 = pColones2.matcher(textoUnificado)
+            if (mColones2.find()) {
+                val strVal = mColones2.group(1) ?: "0"
+                montoColones = parsearStringAMonto(strVal)
+            }
+        }
+
+        // Pass 5C: Dólares ($ o USD) -> $30.23, $ 100.00
+        val pDolares = Pattern.compile("(?i)(?:\\$|USD)\\s*([0-9]{1,3}(?:[,.][0-9]{3})*(?:[,.][0-9]{2}))")
+        val mDolares = pDolares.matcher(textoUnificado)
+        if (mDolares.find()) {
+            val strVal = mDolares.group(1) ?: "0"
+            montoDolares = parsearStringAMonto(strVal)
+        }
+
+        // Pass 5D: Buscar números alrededor de etiquetas "Monto"
+        if (montoColones == 0.0 && montoDolares == 0.0) {
+            for (i in lineas.indices) {
+                val linea = lineas[i]
+                if (linea.contains("Monto", ignoreCase = true) || linea.contains("debitado", ignoreCase = true) || linea.contains("transferido", ignoreCase = true)) {
+                    val pNum = Pattern.compile("([0-9]{1,3}(?:[,.][0-9]{3})*[,.][0-9]{2})")
+                    val mSame = pNum.matcher(linea)
+                    if (mSame.find()) {
+                        montoColones = parsearStringAMonto(mSame.group(1) ?: "0")
+                        break
+                    } else if (i > 0) {
+                        val mPrev = pNum.matcher(lineas[i - 1])
+                        if (mPrev.find()) {
+                            montoColones = parsearStringAMonto(mPrev.group(1) ?: "0")
+                            break
+                        }
+                    } else if (i < lineas.size - 1) {
+                        val mNext = pNum.matcher(lineas[i + 1])
+                        if (mNext.find()) {
+                            montoColones = parsearStringAMonto(mNext.group(1) ?: "0")
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        // Pass 5E: Búsqueda global de cualquier número decimal con 2 decimales
+        if (montoColones == 0.0 && montoDolares == 0.0) {
+            val pDec = Pattern.compile("\\b([0-9]{1,3}(?:[,.][0-9]{3})*[,.][0-9]{2})\\b")
+            val mDec = pDec.matcher(textoOriginal)
+            while (mDec.find()) {
+                val candidata = mDec.group(1) ?: ""
+                val valDec = parsearStringAMonto(candidata)
+                if (valDec > 0.0 && !referencia.contains(candidata.replace("[,.]".toRegex(), ""))) {
+                    montoColones = valDec
+                    break
+                }
+            }
+        }
+
+        // Formatear salida de Monto
         var montoFinal = 0.0
         var montoFormateadoFinal = "No detectado"
 
@@ -521,14 +765,23 @@ class MainActivity : AppCompatActivity() {
             montoFormateadoFinal = String.format(Locale.getDefault(), "$ %,.2f USD", montoDolares)
         }
 
-        // 6. Extraer Fecha
-        val pFecha = Pattern.compile("(?i)([0-9]{1,2}\\s+(?:de\\s+)?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z]*\\s+(?:de\\s+)?[0-9]{4})")
-        val mFecha = pFecha.matcher(textoUnificado)
-        if (mFecha.find()) {
-            fecha = mFecha.group(1) ?: ""
+        // ==========================================
+        // 6. FECHA Y HORA
+        // ==========================================
+        val pFechaTexto = Pattern.compile("(?i)([0-9]{1,2}\\s+(?:de\\s+)?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z]*[,\\s]+(?:de\\s+)?[0-9]{4})")
+        val mFechaTexto = pFechaTexto.matcher(textoUnificado)
+        if (mFechaTexto.find()) {
+            fecha = mFechaTexto.group(1) ?: ""
         }
 
-        // 7. Extraer Hora
+        if (fecha.isBlank()) {
+            val pFechaNum = Pattern.compile("([0-9]{1,2}/[0-9]{1,2}/[0-9]{4})")
+            val mFechaNum = pFechaNum.matcher(textoUnificado)
+            if (mFechaNum.find()) {
+                fecha = mFechaNum.group(1) ?: ""
+            }
+        }
+
         val pHora = Pattern.compile("([0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?\\s*(?:AM|PM|am|pm)?)")
         val mHora = pHora.matcher(textoUnificado)
         if (mHora.find()) {
