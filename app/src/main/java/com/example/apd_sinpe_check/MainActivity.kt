@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity() {
         val uri = currentImageUri
         if (uri == null) {
             btnValidar.isEnabled = true
-            mostrarEstadoAlerta(
+            mostrarEstadoFraude(
                 getString(R.string.estado_alerta_sin_imagen_titulo),
                 getString(R.string.estado_alerta_sin_imagen_desc),
                 mostrarDetalles = false
@@ -267,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         // Preparación del cuerpo MultipartBody para Retrofit (KAN-44)
         val multipartImagen = prepararImagenMultipart(uri)
         if (multipartImagen != null) {
-            // La imagen ya está convertida y lista en formato MultipartBody.Part para peticiones de red
+            // Imagen lista para envío a API REST
         }
 
         procesarComprobanteRealConOCR(uri)
@@ -281,8 +281,6 @@ class MainActivity : AppCompatActivity() {
 
             val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
             val requestFile = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
-
-            Toast.makeText(this, "MultipartBody generado: ${bytes.size} bytes", Toast.LENGTH_SHORT).show()
 
             MultipartBody.Part.createFormData("imagen", "comprobante.jpg", requestFile)
         } catch (e: Exception) {
@@ -303,9 +301,9 @@ class MainActivity : AppCompatActivity() {
                     val rawText = visionText.text
 
                     if (rawText.isBlank()) {
-                        mostrarEstadoAlerta(
-                            "No se detectó texto",
-                            "No fue posible leer texto en la imagen. Asegúrate de que la foto sea clara.",
+                        mostrarEstadoFraude(
+                            "Alerta de Inconsistencia / Fraude",
+                            "No fue posible leer ningún texto en la imagen. La foto es ilegible o no corresponde a un comprobante.",
                             mostrarDetalles = false
                         )
                         return@addOnSuccessListener
@@ -313,14 +311,15 @@ class MainActivity : AppCompatActivity() {
 
                     val datosExtraidos = parsearTextoSinpe(rawText)
 
-                    tvTextoOcrRaw.text = rawText
+                    // Autocompletar dinámicamente el Número de comprobante / referencia en la interfaz (KAN-45)
+                    tvNumeroReferencia.text = datosExtraidos.referencia.ifBlank { "No detectado" }
                     tvEmisor.text = datosExtraidos.emisor.ifBlank { "No detectado" }
                     tvReceptor.text = datosExtraidos.receptor.ifBlank { "No detectado" }
                     tvTelefonoOrigen.text = datosExtraidos.telefono.ifBlank { "No detectado" }
-                    tvNumeroReferencia.text = datosExtraidos.referencia.ifBlank { "No detectado" }
                     tvFechaHora.text = datosExtraidos.fechaHora.ifBlank { "No detectada" }
                     tvMontoDetectado.text = datosExtraidos.montoFormateado
                     tvConfianzaOCR.text = String.format(Locale.getDefault(), "%.2f%% (Lectura OCR Real)", datosExtraidos.ocrConfianza)
+                    tvTextoOcrRaw.text = rawText
 
                     // Verificación de duplicado
                     val claveDuplicado = datosExtraidos.referencia.ifBlank { rawText.hashCode().toString() }
@@ -330,24 +329,23 @@ class MainActivity : AppCompatActivity() {
                     val montoTextoRaw = etMontoEsperado.text.toString().trim()
                     val montoEsperado = parsearStringAMonto(montoTextoRaw)
 
-                    // Se tolera una pequeña diferencia flotante (menor a 1 céntimo)
                     val esMontoIncorrecto = montoEsperado > 0 && datosExtraidos.monto > 0 && abs(datosExtraidos.monto - montoEsperado) >= 0.01
 
-                    // Evaluación de alertas combinadas
+                    // Evaluación de respuesta de la validación (KAN-45)
                     if (esDuplicado && esMontoIncorrecto) {
                         val strMontoEsp = String.format(Locale.getDefault(), "%,.2f", montoEsperado)
-                        mostrarEstadoAlerta(
-                            "¡Alerta! Comprobante Inválido (Duplicado y Monto Erróneo)",
-                            "1. Este comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Misma foto" }}) ya fue registrado anteriormente.\n2. El monto leído (${datosExtraidos.montoFormateado}) NO coincide con el esperado (₡$strMontoEsp).",
+                        mostrarEstadoFraude(
+                            "¡Alerta de Fraude / Inconsistencia!",
+                            "1. El comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Foto duplicada" }}) ya ha sido registrado previamente.\n2. El monto detectado (${datosExtraidos.montoFormateado}) NO coincide con el monto esperado (₡$strMontoEsp).",
                             mostrarDetalles = true
                         )
                         tvEsDuplicado.text = getString(R.string.duplicado_si)
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_invalido))
 
                     } else if (esDuplicado) {
-                        mostrarEstadoAlerta(
-                            getString(R.string.estado_alerta_duplicado_titulo),
-                            "Este comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Misma foto" }}) ya fue registrado y procesado previamente.",
+                        mostrarEstadoFraude(
+                            "¡Alerta: Comprobante Duplicado!",
+                            "Este comprobante (Ref: ${datosExtraidos.referencia.ifBlank { "Misma foto" }}) ya fue procesado anteriormente en el sistema.",
                             mostrarDetalles = true
                         )
                         tvEsDuplicado.text = getString(R.string.duplicado_si)
@@ -356,28 +354,29 @@ class MainActivity : AppCompatActivity() {
                     } else if (esMontoIncorrecto) {
                         referenciasValidadas.add(claveDuplicado)
                         val strMontoEsp = String.format(Locale.getDefault(), "%,.2f", montoEsperado)
-                        mostrarEstadoAlerta(
-                            getString(R.string.estado_alerta_monto_titulo),
-                            "El monto leído (${datosExtraidos.montoFormateado}) NO coincide con el monto esperado (₡$strMontoEsp).",
+                        mostrarEstadoFraude(
+                            "¡Alerta de Inconsistencia en Monto!",
+                            "El monto detectado (${datosExtraidos.montoFormateado}) no coincide con el monto digitado (₡$strMontoEsp).",
                             mostrarDetalles = true
                         )
                         tvEsDuplicado.text = getString(R.string.duplicado_no)
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_valido))
 
                     } else {
+                        // VALIDACIÓN EXITOSA: Cambia a Verde (Éxito) (KAN-45)
                         referenciasValidadas.add(claveDuplicado)
                         tvEsDuplicado.text = getString(R.string.duplicado_no)
                         tvEsDuplicado.setTextColor(getColor(R.color.estado_valido))
 
                         if (datosExtraidos.monto > 0 && montoEsperado > 0) {
                             mostrarEstadoExito(
-                                getString(R.string.estado_exito_titulo),
-                                "El monto detectado (${datosExtraidos.montoFormateado}) coincide perfectamente con el monto esperado."
+                                "Éxito - Validación Correcta",
+                                "El comprobante y el número de referencia (${datosExtraidos.referencia}) se validaron correctamente. El monto coincide perfectamente."
                             )
                         } else {
                             mostrarEstadoExito(
-                                "Comprobante Leído Exitosamente",
-                                "Se extrajeron los datos reales de la foto. Ingresa un monto esperado arriba para verificar la coincidencia."
+                                "Éxito - Comprobante Válido",
+                                "Comprobante verificado con éxito. Número de referencia extraído: ${datosExtraidos.referencia}."
                             )
                         }
                     }
@@ -385,39 +384,48 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     btnValidar.isEnabled = true
                     e.printStackTrace()
-                    mostrarEstadoAlerta(
-                        "Error en análisis de imagen",
-                        "No se pudo analizar la foto: ${e.localizedMessage}",
+                    mostrarEstadoFraude(
+                        "Alerta de Error / Inconsistencia",
+                        "No se pudo procesar la imagen seleccionada: ${e.localizedMessage}",
                         mostrarDetalles = false
                     )
                 }
         } catch (e: Exception) {
             btnValidar.isEnabled = true
             e.printStackTrace()
-            mostrarEstadoAlerta(
-                "Error al cargar foto",
-                "No se pudo abrir la imagen seleccionada.",
+            mostrarEstadoFraude(
+                "Alerta de Error",
+                "Error al abrir la imagen seleccionada.",
                 mostrarDetalles = false
             )
         }
     }
 
     private fun parsearStringAMonto(rawVal: String): Double {
-        var valLimpio = rawVal.replace(" ", "")
-        if (valLimpio.contains(",") && valLimpio.contains(".")) {
-            if (valLimpio.lastIndexOf(',') > valLimpio.lastIndexOf('.')) {
-                valLimpio = valLimpio.replace(".", "").replace(",", ".")
+        if (rawVal.isBlank()) return 0.0
+
+        var valLimpio = rawVal.replace(" ", "").trim()
+
+        // Manejar caso especial de múltiples separadores (ej: 8.988.25 o 8,988,25)
+        val ultPunto = valLimpio.lastIndexOf('.')
+        val ultComa = valLimpio.lastIndexOf(',')
+        val ultSeparador = maxOf(ultPunto, ultComa)
+
+        if (ultSeparador != -1) {
+            val parteDecimalCandidate = valLimpio.substring(ultSeparador + 1)
+
+            // Si después del último separador hay exactamente 1 o 2 dígitos, es el separador decimal
+            if (parteDecimalCandidate.length in 1..2) {
+                val parteEntera = valLimpio.substring(0, ultSeparador).replace(".", "").replace(",", "")
+                valLimpio = "$parteEntera.$parteDecimalCandidate"
             } else {
-                valLimpio = valLimpio.replace(",", "")
+                // Si tiene 3 dígitos o más (ej: 8.000), es separador de miles
+                valLimpio = valLimpio.replace(".", "").replace(",", "")
             }
-        } else if (valLimpio.contains(",")) {
-            val partes = valLimpio.split(",")
-            valLimpio = if (partes.last().length == 2) {
-                partes.dropLast(1).joinToString("") + "." + partes.last()
-            } else {
-                valLimpio.replace(",", "")
-            }
+        } else {
+            valLimpio = valLimpio.replace(".", "").replace(",", "")
         }
+
         return valLimpio.toDoubleOrNull() ?: 0.0
     }
 
@@ -552,6 +560,7 @@ class MainActivity : AppCompatActivity() {
         layoutDetallesResultado.visibility = View.GONE
     }
 
+    // Respuesta Éxito (Verde) - KAN-45
     private fun mostrarEstadoExito(titulo: String, descripcion: String) {
         progressBarCargando.visibility = View.GONE
         ivIconoEstatus.visibility = View.VISIBLE
@@ -564,14 +573,15 @@ class MainActivity : AppCompatActivity() {
         layoutDetallesResultado.visibility = View.VISIBLE
     }
 
-    private fun mostrarEstadoAlerta(titulo: String, descripcion: String, mostrarDetalles: Boolean) {
+    // Respuesta Fraude / Inconsistencia (Rojo) - KAN-45
+    private fun mostrarEstadoFraude(titulo: String, descripcion: String, mostrarDetalles: Boolean) {
         progressBarCargando.visibility = View.GONE
         ivIconoEstatus.visibility = View.VISIBLE
         ivIconoEstatus.setImageResource(R.drawable.ic_warning)
-        ivIconoEstatus.setColorFilter(getColor(R.color.estado_alerta))
-        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_alerta_bg))
+        ivIconoEstatus.setColorFilter(getColor(R.color.estado_invalido))
+        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_invalido_bg))
         tvEstatusPago.text = titulo
-        tvEstatusPago.setTextColor(getColor(R.color.estado_alerta))
+        tvEstatusPago.setTextColor(getColor(R.color.estado_invalido))
         tvEstatusDescripcion.text = descripcion
         layoutDetallesResultado.visibility = if (mostrarDetalles) View.VISIBLE else View.GONE
     }
