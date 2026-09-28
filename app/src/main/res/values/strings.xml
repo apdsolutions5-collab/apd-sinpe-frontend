@@ -2,7 +2,7 @@
     <string name="app_name">A.P.D. SINPE Check</string>
     <string name="company_name">A.P.D. Software Solutions</string>
     <string name="title_validation">Validación de Comprobante SINPE</string>
-    <string name="hint_monto_esperado">Monto esperado (CRC ₡)</string>
+    <string name="hint_monto_esperado">Monto esperado de la venta (ej. ₡15,000)</string>
     <string name="label_comprobante">Comprobante de Pago</string>
     <string name="prompt_upload_comprobante">Selecciona o toma una foto del comprobante SINPE</string>
     <string name="btn_camara">Cámara</string>
@@ -15,4 +15,31 @@
     <string name="cd_logo">APD Logo</string>
     <string name="cd_preview">Vista previa comprobante</string>
     <string name="cd_icon">Icono de estado</string>
+
+    <!-- Indicador de Estado Strings -->
+    <string name="estado_cargando_titulo">Procesando comprobante&#8230;</string>
+    <string name="estado_cargando_desc">Ejecutando análisis OCR de texto y firmas de seguridad SINPE&#8230;</string>
+    <string name="estado_exito_titulo">¡Éxito! Comprobante Válido</string>
+    <string name="estado_exito_desc">El monto detectado en la transferencia coincide con el monto esperado de la venta.</string>
+    <string name="estado_alerta_monto_titulo">¡Alerta! Discrepancia de Monto</string>
+    <string name="estado_alerta_monto_desc">El monto detectado en el comprobante difiere del monto esperado ingresado.</string>
+    <string name="estado_alerta_duplicado_titulo">¡Alerta! Comprobante Inválido (Duplicado)</string>
+    <string name="estado_alerta_duplicado_desc">Este comprobante ya fue utilizado previamente en otra transacción.</string>
+    <string name="estado_alerta_sin_imagen_titulo">¡Alerta! Falta Comprobante</string>
+    <string name="estado_alerta_sin_imagen_desc">Por favor adjunta o toma una foto del comprobante SINPE para poder validar.</string>
+    <string name="monto_detectado_discrepancia">Monto Detectado en Imagen: ₡ 15,000.00 (Esperado: ₡ 0.00)</string>
+
+    <!-- Detailed Fields Labels -->
+    <string name="label_detalles_comprobante">Detalles extraídos del comprobante</string>
+    <string name="label_emisor">Emisor (Quien envía):</string>
+    <string name="label_receptor">Receptor (Quien recibe):</string>
+    <string name="label_telefono_origen">Teléfono origen:</string>
+    <string name="label_monto_detectado">Monto en comprobante:</string>
+    <string name="label_numero_referencia">N° de Referencia:</string>
+    <string name="label_fecha_hora">Fecha y Hora:</string>
+    <string name="label_es_duplicado">¿Es duplicado?:</string>
+    <string name="label_confianza_ocr">Confianza de Lectura (OCR):</string>
+    <string name="label_texto_ocr_raw">Texto leído de la imagen (OCR Raw):</string>
+    <string name="duplicado_si">⚠️ Sí, ya fue registrado</string>
+    <string name="duplicado_no">No, es la primera vez</string>
 </resources>
