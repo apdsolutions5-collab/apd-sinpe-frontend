@@ -27,6 +27,8 @@
     <string name="estado_alerta_duplicado_desc">Este comprobante ya fue utilizado previamente en otra transacción.</string>
     <string name="estado_alerta_sin_imagen_titulo">¡Alerta! Falta Comprobante</string>
     <string name="estado_alerta_sin_imagen_desc">Por favor adjunta o toma una foto del comprobante SINPE para poder validar.</string>
+    <string name="estado_alerta_sin_texto_titulo">¡Alerta: Imagen No Válida / Sin Texto!</string>
+    <string name="estado_alerta_sin_texto_desc">No se detectó ningún texto bancario en la foto. Por favor selecciona una captura de un comprobante SINPE real.</string>
     <string name="estado_alerta_no_bancario_titulo">¡Alerta: Imagen No Válida / No Bancaria!</string>
     <string name="estado_alerta_no_bancario_desc">La imagen no corresponde a un comprobante bancario SINPE reconocido. Adjunta una captura real de tu banco.</string>
     <string name="estado_alerta_corrupto_titulo">¡Alerta: Archivo Corrupto o Ilegible!</string>
