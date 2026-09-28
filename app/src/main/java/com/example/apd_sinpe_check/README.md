@@ -2,7 +2,8 @@
 
 Módulo de software desarrollado para la validación automática de comprobantes SINPE Móvil mediante visión por computadora (OCR) y análisis de patrones de texto. Diseñado para integrarse en el ecosistema core de **A.P.D. Software Solutions**.
 
-## 🏗 Arquitectura y Visión General
+## Arquitectura y Visión General
+## Arquitectura y Visión General
 
 El módulo consta de un componente móvil (Android) y un motor de extracción OCR:
 
