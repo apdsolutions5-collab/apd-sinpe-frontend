@@ -19,32 +19,32 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="20dp"
+            android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/ic_verified"
-                app:tint="@color/azul_acento"
                 android:background="@color/tarjeta_oscura"
+                android:contentDescription="@string/cd_logo"
                 android:padding="8dp"
-                android:contentDescription="@string/cd_logo" />
+                android:src="@drawable/ic_verified"
+                app:tint="@color/azul_acento" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="12dp">
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:letterSpacing="0.05"
                     android:text="@string/company_name"
                     android:textColor="@color/azul_acento"
                     android:textSize="12sp"
-                    android:letterSpacing="0.05"
                     android:textStyle="bold" />
 
                 <TextView
@@ -64,20 +64,21 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:hint="@string/hint_monto_esperado"
-            app:startIconDrawable="@drawable/ic_attach_money"
-            app:startIconTint="@color/azul_acento"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeColor="@color/azul_principal"
             app:hintTextColor="@color/azul_acento"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp">
+            app:startIconDrawable="@drawable/ic_attach_money"
+            app:startIconTint="@color/azul_acento">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etMontoEsperado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
+                android:digits="0123456789.,"
                 android:textColor="@color/texto_principal"
                 android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -86,11 +87,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="@string/label_comprobante"
             android:textColor="@color/texto_principal"
             android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardSeleccionarImagen"
@@ -119,54 +120,54 @@
                     <ImageView
                         android:layout_width="56dp"
                         android:layout_height="56dp"
+                        android:contentDescription="@string/label_comprobante"
                         android:src="@drawable/ic_receipt"
-                        app:tint="@color/azul_acento"
-                        android:contentDescription="@string/label_comprobante" />
+                        app:tint="@color/azul_acento" />
 
                     <TextView
                         android:id="@+id/tvEstadoImagen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:gravity="center"
                         android:text="@string/prompt_upload_comprobante"
                         android:textColor="@color/texto_secundario"
-                        android:textSize="14sp"
-                        android:gravity="center" />
+                        android:textSize="14sp" />
 
                     <!-- Action Buttons: Cámara y Galería -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="16dp">
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnTomarFoto"
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
                             android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
                             android:text="@string/btn_camara"
                             android:textColor="@color/texto_principal"
                             app:backgroundTint="@color/superficie_oscura"
+                            app:cornerRadius="10dp"
                             app:icon="@drawable/ic_camera"
-                            app:iconTint="@color/azul_acento"
-                            app:cornerRadius="10dp" />
+                            app:iconTint="@color/azul_acento" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSeleccionarGaleria"
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
                             android:layout_marginStart="6dp"
+                            android:layout_weight="1"
                             android:text="@string/btn_galeria"
                             android:textColor="@color/texto_principal"
                             app:backgroundTint="@color/superficie_oscura"
+                            app:cornerRadius="10dp"
                             app:icon="@drawable/ic_gallery"
-                            app:iconTint="@color/azul_acento"
-                            app:cornerRadius="10dp" />
+                            app:iconTint="@color/azul_acento" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -181,28 +182,28 @@
                         android:id="@+id/ivComprobante"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/cd_preview" />
+                        android:contentDescription="@string/cd_preview"
+                        android:scaleType="centerCrop" />
 
                     <!-- Overlay Top Badge -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
                         android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
                         android:layout_margin="12dp"
                         android:background="@color/estado_valido_bg"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
 
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_check_circle"
-                            app:tint="@color/estado_valido"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/estado_valido" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -220,8 +221,8 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
                         android:background="#CC0F172A"
-                        android:padding="8dp"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:padding="8dp">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnCambiarImagen"
@@ -260,12 +261,12 @@
             android:textColor="@color/texto_principal"
             android:textSize="16sp"
             android:textStyle="bold"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_verified"
             app:iconGravity="textStart"
-            app:iconTint="@color/texto_principal"
-            app:cornerRadius="12dp" />
+            app:iconTint="@color/texto_principal" />
 
-        <!-- Tarjeta de Resultado con Datos Extraídos en Palabras Normales -->
+        <!-- Tarjeta de Resultado con Datos Extraídos -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardResultado"
             android:layout_width="match_parent"
@@ -287,11 +288,11 @@
                     android:id="@+id/layoutIndicadorHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@color/estado_cargando_bg"
-                    android:layout_marginBottom="16dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
 
                     <ProgressBar
                         android:id="@+id/progressBarCargando"
@@ -304,17 +305,17 @@
                         android:id="@+id/ivIconoEstatus"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:contentDescription="@string/cd_icon"
                         android:src="@drawable/ic_check_circle"
-                        app:tint="@color/estado_valido"
                         android:visibility="gone"
-                        android:contentDescription="@string/cd_icon" />
+                        app:tint="@color/estado_valido" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp">
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/tvEstatusPago"
@@ -347,26 +348,26 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="@string/label_detalles_comprobante"
                         android:textColor="@color/azul_acento"
                         android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
+                        android:textStyle="bold" />
 
                     <!-- Emisor -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_person"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -381,27 +382,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="Jayden Jabar Castro Saenz"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Receptor -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_person"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -416,27 +416,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="Maria Belen Segura Vargas"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Teléfono -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_phone"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -451,27 +450,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="72697041"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Monto -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_attach_money"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -486,27 +484,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="₡ 24,999.99"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- N° Referencia -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_verified"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -521,27 +518,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="2026092010284000529003800"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Fecha y Hora -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_calendar"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -556,27 +552,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="20 Sep 2026, 7:32 PM"
+                            android:gravity="end"
                             android:textColor="@color/texto_principal"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Duplicado Status -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_warning"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -591,27 +586,26 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="Sí, comprobante ya usado"
+                            android:gravity="end"
                             android:textColor="@color/estado_invalido"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Confianza OCR -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
+                            android:contentDescription="@string/cd_icon"
                             android:src="@drawable/ic_description"
-                            app:tint="@color/texto_secundario"
-                            android:contentDescription="@string/cd_icon" />
+                            app:tint="@color/texto_secundario" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -626,33 +620,30 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="89.65% (Lectura Alta)"
+                            android:gravity="end"
                             android:textColor="@color/azul_acento"
                             android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:gravity="end" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Texto OCR Raw Box -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
                         android:text="@string/label_texto_ocr_raw"
                         android:textColor="@color/texto_secundario"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="4dp" />
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tvTextoOcrRaw"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/superficie_oscura"
+                        android:fontFamily="monospace"
                         android:padding="12dp"
                         android:textColor="@color/texto_secundario"
-                        android:textSize="11sp"
-                        android:fontFamily="monospace"
-                        android:text="Z BAC\nNotificación de transferencia SINPE Móvil\nHola, Le informamos que JAYDEN JABAR CASTRO SAENZ realizó una transferencia por medio de SINPE Móvil al teléfono N 72697041 a nombre de MARIA BELEN SEGURA VARGAS.\nReferencia: 2026092010284000529003800\nFecha: 20 septiembre 2026 7:32 PM\nMonto: ₡24,999.99" />
-
+                        android:textSize="11sp" />
                 </LinearLayout>
 
             </LinearLayout>
