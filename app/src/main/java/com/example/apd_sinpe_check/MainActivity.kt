@@ -26,9 +26,15 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.util.Locale
 import java.util.regex.Pattern
@@ -43,7 +49,7 @@ data class SinpeDatosExtraidos(
     val montoFormateado: String = "",
     val referencia: String = "",
     val fechaHora: String = "",
-    val ocrConfianza: Double = 98.2,
+    val ocrConfianza: Double = 98.2
 )
 
 class MainActivity : AppCompatActivity() {
@@ -248,6 +254,40 @@ class MainActivity : AppCompatActivity() {
         cardResultado.visibility = View.GONE
     }
 
+    private fun mostrarEstadoCargando() {
+        progressBarCargando.visibility = View.VISIBLE
+        ivIconoEstatus.visibility = View.GONE
+        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_cargando_bg))
+        tvEstatusPago.text = getString(R.string.estado_cargando_titulo)
+        tvEstatusPago.setTextColor(getColor(R.color.texto_principal))
+        tvEstatusDescripcion.text = getString(R.string.estado_cargando_desc)
+        layoutDetallesResultado.visibility = View.GONE
+    }
+
+    private fun mostrarEstadoExito(titulo: String, descripcion: String) {
+        progressBarCargando.visibility = View.GONE
+        ivIconoEstatus.visibility = View.VISIBLE
+        ivIconoEstatus.setImageResource(R.drawable.ic_check_circle)
+        ivIconoEstatus.setColorFilter(getColor(R.color.estado_valido))
+        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_valido_bg))
+        tvEstatusPago.text = titulo
+        tvEstatusPago.setTextColor(getColor(R.color.estado_valido))
+        tvEstatusDescripcion.text = descripcion
+        layoutDetallesResultado.visibility = View.VISIBLE
+    }
+
+    private fun mostrarEstadoFraude(titulo: String, descripcion: String, mostrarDetalles: Boolean) {
+        progressBarCargando.visibility = View.GONE
+        ivIconoEstatus.visibility = View.VISIBLE
+        ivIconoEstatus.setImageResource(R.drawable.ic_error_circle)
+        ivIconoEstatus.setColorFilter(getColor(R.color.estado_invalido))
+        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_invalido_bg))
+        tvEstatusPago.text = titulo
+        tvEstatusPago.setTextColor(getColor(R.color.estado_invalido))
+        tvEstatusDescripcion.text = descripcion
+        layoutDetallesResultado.visibility = if (mostrarDetalles) View.VISIBLE else View.GONE
+    }
+
     private fun iniciarValidacionConIndicador() {
         cardResultado.visibility = View.VISIBLE
         mostrarEstadoCargando()
@@ -264,10 +304,42 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Preparación del cuerpo MultipartBody para Retrofit (KAN-44)
+        // Preparación del cuerpo MultipartBody para Retrofit y envío a API Python (KAN-44 / KAN-48)
         val multipartImagen = prepararImagenMultipart(uri)
         if (multipartImagen != null) {
-            // Imagen lista para envío a API REST
+            val retrofit = Retrofit.Builder()
+                .baseUrl("http://10.0.2.2:8000/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            val apiService = retrofit.create(ApiService::class.java)
+
+            val montoTextoRaw = etMontoEsperado.text.toString().trim()
+            val montoRequestBody = montoTextoRaw.toRequestBody("text/plain".toMediaTypeOrNull())
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val response = apiService.subirComprobante(multipartImagen, montoRequestBody)
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            val apiData = response.body()
+                            apiData?.let {
+                                // Procesado desde API
+                            }
+                        } else if (response.code() == 400) {
+                            val errorBody = response.errorBody()?.string()
+                            val mensajeLimpio = ApiService.parsearErrorHttp400(errorBody)
+                            mostrarEstadoFraude(
+                                "¡Alerta: Solicitud No Válida (HTTP 400)!",
+                                mensajeLimpio,
+                                mostrarDetalles = false
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
 
         procesarComprobanteRealConOCR(uri)
@@ -467,12 +539,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val palabrasProhibidas = setOf(
-        "comisión", "comision", "motivo", "documento", "referencia", "comprobante",
-        "transferencia", "sinpe", "móvil", "movil", "monto", "debitado", "acreditado",
-        "transferido", "ver", "cuentas", "nueva", "transacción", "transaccion",
-        "detalle", "concepto", "entidad", "iban", "teléfono", "telefono", "origen",
-        "destino", "destinatario", "realizado", "bcr", "bac", "bn", "tbcr", "hola",
-        "notificación", "notificacion", "medio", "número", "numero", "monedero", "pago", "consola"
+        "comisión", "comision", "motivo", "documento", "referencia", "comprobante", "comprobinte",
+        "transferencia", "sinpe", "móvil", "movil", "monto", "debitado", "debltado", "acreditado",
+        "transferido", "ver", "cuentas", "nueva", "transacción", "transaccion", "procesada",
+        "detalle", "concepto", "entidad", "iban", "teléfono", "telefono", "origen", "banco",
+        "destino", "destinatario", "realizado", "reatizado", "reallzado", "por", "bcr", "bac", "bn", "tbcr", "hola",
+        "notificación", "notificacion", "medio", "número", "numero", "monedero", "pago", "consola",
+        "costa", "rica", "nacional", "fondos", "electrónica", "electronica", "resultado", "transaccionada"
     )
 
     private fun esPalabraDeNombreValida(linea: String): Boolean {
@@ -587,7 +660,7 @@ class MainActivity : AppCompatActivity() {
         // ==========================================
         // BÚSQUEDA SECUNDARIA DE RECEPTOR SI AÚN ESTÁ VACÍO
         // ==========================================
-        // Pass 2A: BN (Estructura "MARYENI ALEXANDRA FERNANDEZ CASTRO \n Destinatario:")
+        // Pass 2A: BN (Estructura "YULIANA VILLALTA ZAMORA \n Destinatario:")
         if (receptor.isBlank()) {
             for (i in lineas.indices) {
                 val linea = lineas[i]
@@ -618,11 +691,13 @@ class MainActivity : AppCompatActivity() {
         // ==========================================
         // BÚSQUEDA SECUNDARIA DE EMISOR SI AÚN ESTÁ VACÍO
         // ==========================================
-        // Pass 3A: BN -> "ALEMARK GABRIEL MONGE CASTRO \n Realizado por:"
+        // Pass 3A: BN -> "Guevara Cantillano Edgard \n Realizado por:" / "Reatizado por:"
         if (emisor.isBlank()) {
             for (i in lineas.indices) {
                 val linea = lineas[i]
-                if (linea.contains("Realizado por", ignoreCase = true) ||
+                if (linea.contains("Realizado", ignoreCase = true) ||
+                    linea.contains("Reatizado", ignoreCase = true) ||
+                    linea.contains("Reallzado", ignoreCase = true) ||
                     linea.contains("Transferido desde", ignoreCase = true)) {
 
                     val nombreArriba = extraerNombreArribaDeEtiqueta(lineas, i)
@@ -685,7 +760,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Pass 5B: "2.000,00 Colones"
+        // Pass 5B: "35.000,00 Colones"
         if (montoColones == 0.0) {
             val pColones2 = Pattern.compile("([0-9]{1,3}(?:[,.][0-9]{3})*(?:[,.][0-9]{2}))\\s*(?:Colones|CRC|₡)")
             val mColones2 = pColones2.matcher(textoUnificado)
@@ -800,41 +875,5 @@ class MainActivity : AppCompatActivity() {
             fechaHora = fechaHoraFinal,
             ocrConfianza = 98.2
         )
-    }
-
-    private fun mostrarEstadoCargando() {
-        progressBarCargando.visibility = View.VISIBLE
-        ivIconoEstatus.visibility = View.GONE
-        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_cargando_bg))
-        tvEstatusPago.text = getString(R.string.estado_cargando_titulo)
-        tvEstatusPago.setTextColor(getColor(R.color.texto_principal))
-        tvEstatusDescripcion.text = getString(R.string.estado_cargando_desc)
-        layoutDetallesResultado.visibility = View.GONE
-    }
-
-    // Respuesta Éxito (Verde) - KAN-45
-    private fun mostrarEstadoExito(titulo: String, descripcion: String) {
-        progressBarCargando.visibility = View.GONE
-        ivIconoEstatus.visibility = View.VISIBLE
-        ivIconoEstatus.setImageResource(R.drawable.ic_check_circle)
-        ivIconoEstatus.setColorFilter(getColor(R.color.estado_valido))
-        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_valido_bg))
-        tvEstatusPago.text = titulo
-        tvEstatusPago.setTextColor(getColor(R.color.estado_valido))
-        tvEstatusDescripcion.text = descripcion
-        layoutDetallesResultado.visibility = View.VISIBLE
-    }
-
-    // Respuesta Fraude / Inconsistencia (Rojo) - KAN-45
-    private fun mostrarEstadoFraude(titulo: String, descripcion: String, mostrarDetalles: Boolean) {
-        progressBarCargando.visibility = View.GONE
-        ivIconoEstatus.visibility = View.VISIBLE
-        ivIconoEstatus.setImageResource(R.drawable.ic_warning)
-        ivIconoEstatus.setColorFilter(getColor(R.color.estado_invalido))
-        layoutIndicadorHeader.setBackgroundColor(getColor(R.color.estado_invalido_bg))
-        tvEstatusPago.text = titulo
-        tvEstatusPago.setTextColor(getColor(R.color.estado_invalido))
-        tvEstatusDescripcion.text = descripcion
-        layoutDetallesResultado.visibility = if (mostrarDetalles) View.VISIBLE else View.GONE
     }
 }

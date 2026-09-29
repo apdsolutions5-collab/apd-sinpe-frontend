@@ -55,6 +55,27 @@ class SinpeValidationUnitTest {
     }
 
     @Test
+    fun testComprobanteBN_GuevaraEmisor_esDetectado() {
+        val textoBN = """
+            Banco Nacional de Costa Rica
+            31/01/2026 17:42:57
+            BN Sinpe Móvil
+            Transacción procesada
+            2026013115183010944263663
+            35.000,00 Colones
+            Monto debltado
+            Guevara Cantillano Edgard
+            Reatizado por
+            63166517
+            Número de monedero:
+            YULIANA VILLALTA ZAMORA
+            Destinatario:
+        """.trimIndent()
+
+        assertTrue(esComprobanteBancarioValido(textoBN))
+    }
+
+    @Test
     fun testImagenNoBancaria_o_Corrupta_esRechazada() {
         val textoFotoMeme = "Foto de un gato jugando en el jardin 2025"
         assertFalse(esComprobanteBancarioValido(textoFotoMeme))
